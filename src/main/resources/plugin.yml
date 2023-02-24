@@ -1,0 +1,4 @@
+name: KTHangman
+version: '${project.version}'
+main: io.github.maazapan.kthangman.KTHangman
+api-version: 1.16
