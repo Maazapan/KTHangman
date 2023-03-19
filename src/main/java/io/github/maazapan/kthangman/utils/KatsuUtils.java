@@ -43,6 +43,19 @@ public class KatsuUtils {
         return null;
     }
 
+    public static String formatWord(String word) {
+        StringBuilder formatted = new StringBuilder();
+
+        for (int i = 0; i < word.length(); i++) {
+            if (word.charAt(i) == ' ') {
+                formatted.append("  ");
+                continue;
+            }
+            formatted.append("_ ");
+        }
+        return formatted.toString();
+    }
+
     public static String coloredHex(String message) {
         Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
         Matcher matcher = pattern.matcher(message);

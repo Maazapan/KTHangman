@@ -1,20 +1,33 @@
 package io.github.maazapan.kthangman.game.player;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.UUID;
 
 public class GamePlayer {
 
-    private final String name;
+    private final UUID uuid;
 
-    private ItemStack[] contents;
-    private ItemStack[] armorContents;
+    private final ItemStack[] contents;
+    private final ItemStack[] armorContents;
 
-    public GamePlayer(String name){
-        this.name = name;
+    private final float xp;
+    private final int food;
+
+    private final double health;
+
+    public GamePlayer(Player player) {
+        this.armorContents = player.getInventory().getArmorContents();
+        this.contents = player.getInventory().getContents();
+        this.food = player.getFoodLevel();
+        this.uuid = player.getUniqueId();
+        this.xp = player.getExp();
+        this.health = player.getHealth();
     }
 
-    public String getName() {
-        return name;
+    public UUID getUUID() {
+        return uuid;
     }
 
     public ItemStack[] getContents() {
@@ -25,11 +38,15 @@ public class GamePlayer {
         return armorContents;
     }
 
-    public void setContents(ItemStack[] contents) {
-        this.contents = contents;
+    public float getXp() {
+        return xp;
     }
 
-    public void setArmorContents(ItemStack[] armorContents) {
-        this.armorContents = armorContents;
+    public int getFood() {
+        return food;
+    }
+
+    public double getHealth() {
+        return health;
     }
 }

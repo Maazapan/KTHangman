@@ -2,3 +2,14 @@ name: KTHangman
 version: '${project.version}'
 main: io.github.maazapan.kthangman.KTHangman
 api-version: 1.16
+
+softdepend:
+  - PlaceholderAPI
+  - MultiverseCore
+  - My_Worlds
+  - SlimeWorldManager
+
+commands:
+  hm:
+    aliases:
+      - hangman

@@ -1,12 +1,19 @@
 package io.github.maazapan.kthangman.game;
 
+import io.github.maazapan.kthangman.game.player.GamePlayer;
+import io.github.maazapan.kthangman.game.state.ArenaState;
 import io.github.maazapan.kthangman.game.type.ArenaType;
 import org.bukkit.Location;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-public abstract class Arena {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class Arena {
 
     private final String name;
-    private final ArenaType type;
+    private ArenaState state;
 
     private Location spawn;
     private Location hang;
@@ -14,11 +21,42 @@ public abstract class Arena {
     private boolean enabled;
     private boolean used;
 
-    public Arena(ArenaType type, String name) {
+    private long time;
+
+    private int lives;
+    private int currentLives;
+
+    private final List<GamePlayer> gamePlayers;
+    private List<String> words;
+
+    private String word;
+    private String formatWord;
+
+    public Arena(String name) {
+        this.gamePlayers = new ArrayList<>();
+        this.state = ArenaState.WAITING;
+        this.lives = 5;
+        this.currentLives = lives;
         this.name = name;
-        this.type = type;
         this.enabled = false;
         this.used = false;
+        this.words = Arrays.asList(
+                "HOUSE", "CAT", "MINECRAFT", "DOG",
+                "BANANA", "APPLE", "ORANGE",
+                "TECHNOLOGY", "COMPUTER", "MUSIC");
+    }
+
+    public Arena(Arena arena) {
+        this.spawn = arena.getSpawn();
+        this.hang = arena.getHang();
+        this.gamePlayers = arena.getGamePlayers();
+        this.currentLives = arena.getCurrentLives();
+        this.state = arena.getState();
+        this.lives = arena.getLives();
+        this.name = arena.getName();
+        this.enabled = arena.isEnabled();
+        this.used = arena.isUsed();
+        this.words = arena.getWords();
     }
 
     public boolean isEnabled() {
@@ -33,6 +71,10 @@ public abstract class Arena {
         return name;
     }
 
+    public int getLives() {
+        return lives;
+    }
+
     public Location getHang() {
         return hang;
     }
@@ -41,12 +83,16 @@ public abstract class Arena {
         return spawn;
     }
 
-    public ArenaType getType() {
-        return type;
+    public long getTime() {
+        return time;
     }
 
     public void setSpawn(Location spawn) {
         this.spawn = spawn;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     public void setHang(Location hang) {
@@ -61,8 +107,51 @@ public abstract class Arena {
         this.used = used;
     }
 
-    public abstract void update();
-    public abstract void start();
-    public abstract void stop();
-    public abstract void finish();
+    public List<GamePlayer> getGamePlayers() {
+        return gamePlayers;
+    }
+
+    public List<String> getWords() {
+        return words;
+    }
+
+    public String getWord() {
+        return word;
+    }
+
+    public String getFormatWord() {
+        return formatWord;
+    }
+
+    public void setLives(int lives) {
+        this.lives = lives;
+    }
+
+    public void setFormatWord(String formatWord) {
+        this.formatWord = formatWord;
+    }
+
+    public void setWord(String word) {
+        this.word = word;
+    }
+
+    public ArenaState getState() {
+        return state;
+    }
+
+    public int getCurrentLives() {
+        return currentLives;
+    }
+
+    public void setCurrentLives(int currentLives) {
+        this.currentLives = currentLives;
+    }
+
+    public void setState(ArenaState state) {
+        this.state = state;
+    }
+
+    public void setWords(List<String> words) {
+        this.words = words;
+    }
 }

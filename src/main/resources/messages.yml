@@ -1,0 +1,45 @@
+join-arena: "&eYou have joined the arena &7%arena_name%!"
+lobby-set: "&aThe lobby has been set in your location!"
+lobby-not-set: "&cThe lobby has not been set please use &7/hm setlobby!"
+start-countdown: '&8&l» &e¡The game will start in &a%time% &eseconds!'
+no-playing-arena: '&cYou are not playing in any arena!'
+ready-in-arena: '&cYou are ready in the arena &7%arena_name%&c!'
+arena-non-exist: '&cThe arena &7%arena_name% &cdoes not exist!'
+arena-in-use: '&cThe arena &7%arena_name% &cis already in use!'
+arena-not-available: '&cThere are no arenas available.'
+arena-already-exist: '&cThe arena &7%arena_name% &calready exists!'
+arena-created: '&fThe arena &e%arena_name% &fhas been created!'
+arena-delete: '&fThe arena &e%arena_name% &fhas been deleted!'
+arena-set-spawn: '&aThe arena &7%arena_name% &aspawn has been set in your location!'
+arena-set-hangman: '&fThe arena &e%arena_name% &fhangman has been set in your location!'
+arena-already-enabled: '&cThe arena &7%arena_name% &cis already enabled!'
+arena-already-disabled: '&cThe arena &7%arena_name% &cis already disabled!'
+arena-hangman-error: '&cThe arena &7%arena_name% &cis not a hangman location use /hm arena sethangman <name>!'
+arena-spawn-error: '&cThe arena &7%arena_name% &cis not a spawn location use /hm arena setspawn <name>!'
+arena-enabled: '&fThe arena &e%arena_name% &fhas been enabled!'
+arena-disabled: '&fThe arena &e%arena_name% &fhas been disabled!'
+arena-leave: '&cYou have left the arena &7%arena_name%&c!'
+arena-lives-left: '&cYou have &e%lives% &clives left!'
+arena-commands-disabled: '&cYou can not use commands while playing!'
+
+
+arena-win:
+  - '&eYou have won the game!'
+  - '&eYou have won &7%coins% &ecoins!'
+  - '&eYou have won &7%points% &epoints!'
+game-start:
+    - '&r'
+    - '                   &E&l¡GAME STARTED!'
+    - ''
+    - '          &7Guess the word as fast as possible '
+    - '        &7you only have a few tries try not to die!'
+    - ''
+    - '          &fThe Word is: &r&a%formatted_word%'
+    - ''
+
+action-bar:
+  game-word: "&fThe Word is: &a%formatted_word%"
+
+titles:
+  start-countdown: "&a%time%;&r"
+  game-start: "&e¡Game has started!;&fThe Word is &a%formatted_word%"

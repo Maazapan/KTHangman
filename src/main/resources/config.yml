@@ -1,3 +1,5 @@
-
 config:
-  prefix: "&e&lKTHangMan &8» &f"
+  prefix: " &8&l» &f"
+
+  allowed-commands:
+    - ''
