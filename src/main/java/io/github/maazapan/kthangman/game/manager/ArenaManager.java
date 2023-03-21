@@ -3,11 +3,15 @@ package io.github.maazapan.kthangman.game.manager;
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.countdown.StartCountdown;
+import io.github.maazapan.kthangman.game.manager.scoreboard.FastBoard;
 import io.github.maazapan.kthangman.game.player.GameArena;
 import io.github.maazapan.kthangman.game.player.GamePlayer;
+import io.github.maazapan.kthangman.game.state.ArenaState;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -46,14 +50,17 @@ public class ArenaManager {
 
         player.setFoodLevel(20);
         player.setExp(0.0f);
+        player.setGameMode(GameMode.ADVENTURE);
 
         player.teleport(arena.getSpawn());
         player.sendMessage(KatsuUtils.coloredHex(messages.getString("join-arena").replaceAll("%arena_name%", arena.getName())));
 
+        arena.setState(ArenaState.STARTING);
         arena.getGamePlayers().add(gamePlayer);
         GameArena gameArena = new GameArena(arena, plugin);
 
         playingArenas.add(gameArena);
+        player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
         // Start arena countdown.
         new StartCountdown(plugin, gameArena).runTaskTimer(plugin, 0, 20);
@@ -70,6 +77,7 @@ public class ArenaManager {
         FileConfiguration messages = plugin.getLoaderManager().getFileManager().getMessages();
         GamePlayer gamePlayer = getGamePlayer(arena, player.getUniqueId());
 
+        // Restore player inventory and stats.
         if (gamePlayer != null) {
             player.getInventory().setContents(gamePlayer.getContents());
             player.getInventory().setArmorContents(gamePlayer.getArmorContents());
@@ -77,21 +85,31 @@ public class ArenaManager {
             player.setFoodLevel(gamePlayer.getFood());
             player.setExp(gamePlayer.getXp());
             player.setHealth(gamePlayer.getHealth());
+            player.setGameMode(gamePlayer.getGameMode());
         }
 
+        // Teleport player at lobby
         if (getLobby() != null) {
             player.teleport(getLobby());
         }
 
+        // If the player is has scoreboard, remove it.
+        if (plugin.getScoreboardMap().containsKey(player.getUniqueId())) {
+            FastBoard fastBoard = plugin.getScoreboardMap().get(player.getUniqueId());
+            fastBoard.delete();
+            plugin.getScoreboardMap().remove(player.getUniqueId());
+        }
+
         arena.getGamePlayers().remove(gamePlayer);
 
+        // If the arena is empty, terminate the game.
         if (arena.getGamePlayers().isEmpty()) {
+            playingArenas.remove(arena);
             arena.terminateGame();
         }
 
         player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-leave").replaceAll("%arena_name%", arena.getName())));
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(" "));
-        playingArenas.remove(arena);
     }
 
     /**

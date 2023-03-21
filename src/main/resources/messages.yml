@@ -21,7 +21,7 @@ arena-disabled: '&fThe arena &e%arena_name% &fhas been disabled!'
 arena-leave: '&cYou have left the arena &7%arena_name%&c!'
 arena-lives-left: '&cYou have &e%lives% &clives left!'
 arena-commands-disabled: '&cYou can not use commands while playing!'
-
+arena-game-over-leave: "&cThe game is over you will leave the arena in &e10 &cseconds!"
 
 arena-win:
   - '&eYou have won the game!'
@@ -36,10 +36,32 @@ game-start:
     - ''
     - '          &fThe Word is: &r&a%formatted_word%'
     - ''
+game-over:
+    - '&r'
+    - '                    &e&l¡GAME OVER!'
+    - ''
+    - "          &7The game is over you've lost this time"
+    - '          &7go and try as many times as you want! '
+    - ''
+    - '                &fThe Word was: &a%word%'
+    - ''
 
 action-bar:
   game-word: "&fThe Word is: &a%formatted_word%"
 
+scoreboard:
+  playing-scoreboard:
+    - '       &e&lKTHangman       '
+    - '         &8%date%'
+    - '&r'
+    - '&fTime Remain: &b%time%'
+    - ''
+    - '&fLives: &c%lives% ☠'
+    - '&fWord: &a%formatted_word%'
+    - '&f'
+    - '&ewww.example.com'
+
 titles:
   start-countdown: "&a%time%;&r"
   game-start: "&e¡Game has started!;&fThe Word is &a%formatted_word%"
+  game-over: "&e¡Game is Over!;&fThe Word was &a%word%"

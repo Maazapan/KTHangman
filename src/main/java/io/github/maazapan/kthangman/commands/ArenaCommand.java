@@ -5,6 +5,7 @@ import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
 import io.github.maazapan.kthangman.game.player.GameArena;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,6 +14,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -238,20 +240,20 @@ public class ArenaCommand implements CommandExecutor {
                     case "test":
 
                         new BukkitRunnable() {
-
                             private float i = 0.7f;
                             private int time = 0;
 
                             public void run() {
                                 if (time <= 2) {
-                                    player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 10, i);
-                                }
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 10, i);
 
-                                i += 0.1f;
+                                } else {
+                                    cancel();
+                                }
+                                i -= 0.1f;
                                 time++;
                             }
-                        }.runTaskTimer(plugin, 0, 10);
-
+                        }.runTaskTimer(plugin, 0, 7);
                         break;
 
                     default:

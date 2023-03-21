@@ -2,4 +2,6 @@ config:
   prefix: " &8&l» &f"
 
   allowed-commands:
-    - ''
+    - '/hm leave'
+    - '/hangman leave'
+    - '/kthangman leave'

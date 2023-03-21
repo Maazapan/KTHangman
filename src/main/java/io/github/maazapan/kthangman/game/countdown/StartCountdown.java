@@ -1,7 +1,6 @@
 package io.github.maazapan.kthangman.game.countdown;
 
 import io.github.maazapan.kthangman.KTHangman;
-import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.player.GameArena;
 import io.github.maazapan.kthangman.game.player.GamePlayer;
 import io.github.maazapan.kthangman.utils.KatsuUtils;

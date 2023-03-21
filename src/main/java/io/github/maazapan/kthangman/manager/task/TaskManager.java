@@ -15,6 +15,6 @@ public class TaskManager {
      * Register and run the all plugin task.
      */
     public void runTask() {
-        new ArenaTask(plugin).runTaskTimer(plugin, 0, 20);
+        new ArenaTask(plugin).runTaskTimer(plugin, 0, 10);
     }
 }

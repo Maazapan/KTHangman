@@ -1,27 +1,27 @@
 package io.github.maazapan.kthangman;
 
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
+import io.github.maazapan.kthangman.game.manager.scoreboard.FastBoard;
 import io.github.maazapan.kthangman.manager.LoaderManager;
-import io.github.maazapan.kthangman.manager.files.FileCreator;
-import io.github.maazapan.kthangman.manager.files.FileManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public final class KTHangman extends JavaPlugin {
 
     private ArenaManager arenaManager;
     private LoaderManager loaderManager;
 
+    private Map<UUID, FastBoard> scoreboardMap;
+
     @Override
     public void onEnable() {
         // Plugin startup logic
         this.arenaManager = new ArenaManager(this);
         this.loaderManager = new LoaderManager(this);
+        this.scoreboardMap = new HashMap<>();
 
         loaderManager.load();
     }
@@ -38,6 +38,10 @@ public final class KTHangman extends JavaPlugin {
 
     public ArenaManager getArenaManager() {
         return arenaManager;
+    }
+
+    public Map<UUID, FastBoard> getScoreboardMap() {
+        return scoreboardMap;
     }
 
     public String getPrefix() {

@@ -1,7 +1,6 @@
 package io.github.maazapan.kthangman.game.task;
 
 import io.github.maazapan.kthangman.KTHangman;
-import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.player.GameArena;
 import org.bukkit.scheduler.BukkitRunnable;
 

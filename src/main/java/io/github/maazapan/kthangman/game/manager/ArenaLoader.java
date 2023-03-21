@@ -92,7 +92,7 @@ public class ArenaLoader {
                 List<String> words = config.getStringList("words");
 
                 boolean enabled = config.getBoolean("enabled");
-                long time = config.getLong("time");
+                int time = config.getInt("time");
 
                 // Create a new arena.
                 Arena arena = new Arena(name);

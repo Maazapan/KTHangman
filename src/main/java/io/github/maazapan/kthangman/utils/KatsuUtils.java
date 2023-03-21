@@ -8,7 +8,12 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +46,10 @@ public class KatsuUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String formatTime(long time){
+        return TimeUnit.MILLISECONDS.toMinutes(time) + ":" + TimeUnit.MILLISECONDS.toSeconds(time) % 60;
     }
 
     public static String formatWord(String word) {

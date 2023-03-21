@@ -2,9 +2,7 @@ package io.github.maazapan.kthangman.game;
 
 import io.github.maazapan.kthangman.game.player.GamePlayer;
 import io.github.maazapan.kthangman.game.state.ArenaState;
-import io.github.maazapan.kthangman.game.type.ArenaType;
 import org.bukkit.Location;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +19,8 @@ public class Arena {
     private boolean enabled;
     private boolean used;
 
-    private long time;
+    private int time;
+    private long currentTime;
 
     private int lives;
     private int currentLives;
@@ -38,6 +37,7 @@ public class Arena {
         this.lives = 5;
         this.currentLives = lives;
         this.name = name;
+        this.time = 120;
         this.enabled = false;
         this.used = false;
         this.words = Arrays.asList(
@@ -47,6 +47,7 @@ public class Arena {
     }
 
     public Arena(Arena arena) {
+        this.time = arena.getTime();
         this.spawn = arena.getSpawn();
         this.hang = arena.getHang();
         this.gamePlayers = arena.getGamePlayers();
@@ -83,7 +84,7 @@ public class Arena {
         return spawn;
     }
 
-    public long getTime() {
+    public int getTime() {
         return time;
     }
 
@@ -91,7 +92,7 @@ public class Arena {
         this.spawn = spawn;
     }
 
-    public void setTime(long time) {
+    public void setTime(int time) {
         this.time = time;
     }
 
@@ -149,6 +150,14 @@ public class Arena {
 
     public void setState(ArenaState state) {
         this.state = state;
+    }
+
+    public long getCurrentTime() {
+        return currentTime;
+    }
+
+    public void setCurrentTime(long currentTime) {
+        this.currentTime = currentTime;
     }
 
     public void setWords(List<String> words) {

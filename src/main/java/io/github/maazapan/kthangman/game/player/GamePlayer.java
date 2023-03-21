@@ -1,5 +1,6 @@
 package io.github.maazapan.kthangman.game.player;
 
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -16,6 +17,7 @@ public class GamePlayer {
     private final int food;
 
     private final double health;
+    private final GameMode gameMode;
 
     public GamePlayer(Player player) {
         this.armorContents = player.getInventory().getArmorContents();
@@ -24,10 +26,15 @@ public class GamePlayer {
         this.uuid = player.getUniqueId();
         this.xp = player.getExp();
         this.health = player.getHealth();
+        this.gameMode = player.getGameMode();
     }
 
     public UUID getUUID() {
         return uuid;
+    }
+
+    public GameMode getGameMode() {
+        return gameMode;
     }
 
     public ItemStack[] getContents() {

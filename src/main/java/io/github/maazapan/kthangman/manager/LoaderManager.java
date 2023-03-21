@@ -3,7 +3,6 @@ package io.github.maazapan.kthangman.manager;
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.commands.ArenaCommand;
 import io.github.maazapan.kthangman.game.manager.ArenaLoader;
-import io.github.maazapan.kthangman.game.manager.ArenaManager;
 import io.github.maazapan.kthangman.listener.ArenaListener;
 import io.github.maazapan.kthangman.listener.PlayerListener;
 import io.github.maazapan.kthangman.manager.files.FileManager;

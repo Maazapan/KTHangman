@@ -1,11 +1,9 @@
 package io.github.maazapan.kthangman.listener;
 
 import io.github.maazapan.kthangman.KTHangman;
-import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
 import io.github.maazapan.kthangman.game.player.GameArena;
 import io.github.maazapan.kthangman.game.state.ArenaState;
-import io.github.maazapan.kthangman.manager.files.FileCreator;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
