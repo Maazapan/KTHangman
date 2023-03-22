@@ -4,18 +4,15 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
-import com.sun.java.accessibility.util.internal.LabelTranslator;
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
-import io.github.maazapan.kthangman.game.manager.scoreboard.FastBoard;
 import io.github.maazapan.kthangman.game.manager.scoreboard.FastManager;
 import io.github.maazapan.kthangman.game.state.ArenaState;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.WorldBorder;
 import org.bukkit.attribute.Attribute;
@@ -23,9 +20,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -64,6 +59,8 @@ public class GameArena extends Arena {
         this.setState(ArenaState.PLAYING);
         this.setFormatWord(formatWord);
         this.setCurrentTime(System.currentTimeMillis() + (getTime() * 1000L));
+
+        System.out.println(getWord());
 
         for (Player player : arenaPlayers) {
             List<String> message = messages.getStringList("game-start");
@@ -161,17 +158,20 @@ public class GameArena extends Arena {
                 .map(GamePlayer::getUUID).filter(uuid -> Bukkit.getPlayer(uuid) != null)
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
 
+        this.setState(ArenaState.ENDING);
+
         for (Player player : arenaPlayers) {
 
-
             // Send win message at player.
+            long time = getTime() - ((getCurrentTime() - System.currentTimeMillis()) / 1000L);
+
             List<String> winMessages = messages.getStringList("game-win");
             winMessages.replaceAll(s -> s.replaceAll("%word%", getWord())
-                    .replaceAll("%lives%", String.valueOf(getCurrentLives())));
+                    .replaceAll("%lives%", String.valueOf(getCurrentLives()))
+                    .replaceAll("%time%", String.valueOf(time)));
 
             winMessages.forEach(s -> player.sendMessage(KatsuUtils.coloredHex(s)));
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 1);
-
 
             // Terminate the game past 10 seconds.
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> arenaManager.leaveArena(this, player), 200);
@@ -195,38 +195,54 @@ public class GameArena extends Arena {
         if (writeWord.equalsIgnoreCase(this.getWord())) {
             this.gameWin();
 
+
+        } else if (getWord().contains(writeWord)){
+
+
         } else {
-            int lives = this.getCurrentLives() - 1;
-
-            // Check if the player has no lives.
-            if (lives <= 0) {
-                this.gameOver();
-                return;
-            }
-
-            for (Player player : arenaPlayers) {
-
-                // discover a letter if the player has only one life.
-                if (lives == 1) {
-                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 2);
-                    this.discoverLetter();
-                }
-
-                player.playSound(player.getLocation(), Sound.ENTITY_IRON_GOLEM_DAMAGE, 1, 1);
-                player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-lives-left").replace("%lives%", String.valueOf(lives))));
-
-                double damage = (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / this.getLives());
-                Bukkit.getScheduler().runTask(plugin, () -> player.damage(damage));
-
-                // Send blood effect to player.
-                if (config.getBoolean("config.blood-effect")) {
-                    this.sendBloodEffect(player);
-                }
-            }
-            this.setCurrentLives(lives);
+            this.decreaseLives();
         }
     }
 
+    /**
+     * Decrease the lives of the player.
+     */
+    private void decreaseLives() {
+        FileConfiguration config = plugin.getConfig();
+
+        List<Player> arenaPlayers = getGamePlayers().stream()
+                .map(GamePlayer::getUUID).filter(uuid -> Bukkit.getPlayer(uuid) != null)
+                .map(Bukkit::getPlayer).collect(Collectors.toList());
+
+        int lives = this.getCurrentLives() - 1;
+
+        // Check if the player has no lives.
+        if (lives <= 0) {
+            this.gameOver();
+            return;
+        }
+
+        for (Player player : arenaPlayers) {
+
+            // discover a letter if the player has only one life.
+            if (lives == 1) {
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 2);
+                this.discoverLetter();
+            }
+
+            player.playSound(player.getLocation(), Sound.ENTITY_IRON_GOLEM_DAMAGE, 1, 1);
+            player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-lives-left").replace("%lives%", String.valueOf(lives))));
+
+            double damage = (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / this.getLives());
+            Bukkit.getScheduler().runTask(plugin, () -> player.damage(damage));
+
+            // Send blood effect to player.
+            if (config.getBoolean("config.blood-effect")) {
+                this.sendBloodEffect(player);
+            }
+        }
+        this.setCurrentLives(lives);
+    }
 
     private final List<Integer> indexDiscover = new ArrayList<>();
 

@@ -26,11 +26,12 @@ arena-game-win-leave: "&c¡You will leave the arena in &e10 &cseconds!"
 
 game-win:
   - ''
-  - '            &e¡YOU HAVE WON THE GAME!'
+  - '            &e&l¡YOU HAVE WON THE GAME!'
   - ''
+  - '       &7Congratulations you have won the game'
+  - '      &7You have guessed it in &a%time% &7seconds!'
   - ''
-  - '             &7The word was: &a%word%'
-  - '     &7You have guessed it in &a%time% &7seconds!'
+  - '               &fLives Remain: &c%lives% ☠'
   - ''
 game-start:
     - '&r'
