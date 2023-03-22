@@ -1,19 +1,26 @@
 package io.github.maazapan.kthangman.commands;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketContainer;
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
 import io.github.maazapan.kthangman.game.player.GameArena;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -238,22 +245,21 @@ public class ArenaCommand implements CommandExecutor {
                         break;
 
                     case "test":
+                        WorldBorder worldBorder = player.getWorld().getWorldBorder();
 
-                        new BukkitRunnable() {
-                            private float i = 0.7f;
-                            private int time = 0;
+                        ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
+                        PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_SIZE);
+                        packet.getDoubles().write(0, 0.0);
 
-                            public void run() {
-                                if (time <= 2) {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 10, i);
+                        protocolManager.sendServerPacket(player, packet);
 
-                                } else {
-                                    cancel();
-                                }
-                                i -= 0.1f;
-                                time++;
-                            }
-                        }.runTaskTimer(plugin, 0, 7);
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+                        {
+                            PacketContainer packet2 = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_SIZE);
+                            packet.getDoubles().write(0, worldBorder.getSize());
+
+                            protocolManager.sendServerPacket(player, packet2);
+                        }, 10);
                         break;
 
                     default:

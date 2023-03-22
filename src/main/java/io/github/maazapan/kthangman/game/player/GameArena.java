@@ -1,5 +1,10 @@
 package io.github.maazapan.kthangman.game.player;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketContainer;
+import com.sun.java.accessibility.util.internal.LabelTranslator;
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
@@ -12,6 +17,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.WorldBorder;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -57,7 +63,7 @@ public class GameArena extends Arena {
         this.setWord(word);
         this.setState(ArenaState.PLAYING);
         this.setFormatWord(formatWord);
-        this.setCurrentTime(System.currentTimeMillis() + (15 * 1000L));
+        this.setCurrentTime(System.currentTimeMillis() + (getTime() * 1000L));
 
         for (Player player : arenaPlayers) {
             List<String> message = messages.getStringList("game-start");
@@ -156,8 +162,20 @@ public class GameArena extends Arena {
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
 
         for (Player player : arenaPlayers) {
-            List<String> winMessages = messages.getStringList("arena-win");
+
+
+            // Send win message at player.
+            List<String> winMessages = messages.getStringList("game-win");
+            winMessages.replaceAll(s -> s.replaceAll("%word%", getWord())
+                    .replaceAll("%lives%", String.valueOf(getCurrentLives())));
+
             winMessages.forEach(s -> player.sendMessage(KatsuUtils.coloredHex(s)));
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 1);
+
+
+            // Terminate the game past 10 seconds.
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> arenaManager.leaveArena(this, player), 200);
+            player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-game-win-leave")));
         }
     }
 
@@ -167,6 +185,8 @@ public class GameArena extends Arena {
      * @param writeWord String at PlayerChatEvent
      */
     public void checkWord(String writeWord) {
+        FileConfiguration config = plugin.getConfig();
+
         List<Player> arenaPlayers = getGamePlayers().stream()
                 .map(GamePlayer::getUUID).filter(uuid -> Bukkit.getPlayer(uuid) != null)
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
@@ -197,6 +217,11 @@ public class GameArena extends Arena {
 
                 double damage = (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / this.getLives());
                 Bukkit.getScheduler().runTask(plugin, () -> player.damage(damage));
+
+                // Send blood effect to player.
+                if (config.getBoolean("config.blood-effect")) {
+                    this.sendBloodEffect(player);
+                }
             }
             this.setCurrentLives(lives);
         }
@@ -265,6 +290,29 @@ public class GameArena extends Arena {
                 time++;
             }
         }.runTaskTimer(plugin, 0, 10);
+    }
+
+    /**
+     * Send blood effect to player.
+     *
+     * @param player Player to send the effect.
+     */
+    private void sendBloodEffect(Player player) {
+        WorldBorder worldBorder = player.getWorld().getWorldBorder();
+
+        ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
+        PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_SIZE);
+        packet.getDoubles().write(0, 0.0);
+
+        protocolManager.sendServerPacket(player, packet);
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
+        {
+            PacketContainer packet2 = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_SIZE);
+            packet.getDoubles().write(0, worldBorder.getSize());
+
+            protocolManager.sendServerPacket(player, packet2);
+        }, 10);
     }
 
 

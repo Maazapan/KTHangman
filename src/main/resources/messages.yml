@@ -18,15 +18,20 @@ arena-hangman-error: '&cThe arena &7%arena_name% &cis not a hangman location use
 arena-spawn-error: '&cThe arena &7%arena_name% &cis not a spawn location use /hm arena setspawn <name>!'
 arena-enabled: '&fThe arena &e%arena_name% &fhas been enabled!'
 arena-disabled: '&fThe arena &e%arena_name% &fhas been disabled!'
-arena-leave: '&cYou have left the arena &7%arena_name%&c!'
+arena-leave: '&cYou have left the arena &e%arena_name%'
 arena-lives-left: '&cYou have &e%lives% &clives left!'
 arena-commands-disabled: '&cYou can not use commands while playing!'
 arena-game-over-leave: "&cThe game is over you will leave the arena in &e10 &cseconds!"
+arena-game-win-leave: "&c¡You will leave the arena in &e10 &cseconds!"
 
-arena-win:
-  - '&eYou have won the game!'
-  - '&eYou have won &7%coins% &ecoins!'
-  - '&eYou have won &7%points% &epoints!'
+game-win:
+  - ''
+  - '            &e¡YOU HAVE WON THE GAME!'
+  - ''
+  - ''
+  - '             &7The word was: &a%word%'
+  - '     &7You have guessed it in &a%time% &7seconds!'
+  - ''
 game-start:
     - '&r'
     - '                   &E&l¡GAME STARTED!'
