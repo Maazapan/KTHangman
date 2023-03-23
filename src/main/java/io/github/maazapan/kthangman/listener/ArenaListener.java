@@ -39,7 +39,7 @@ public class ArenaListener implements Listener {
      */
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
-        String message = event.getMessage();
+        String message = event.getMessage().toUpperCase();
         Player player = event.getPlayer();
 
         if (arenaManager.isPlayingPlayer(player.getUniqueId())) {

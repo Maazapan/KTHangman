@@ -6,6 +6,7 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.game.Arena;
+import io.github.maazapan.kthangman.game.discover.DiscoverLetter;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
 import io.github.maazapan.kthangman.game.manager.scoreboard.FastManager;
 import io.github.maazapan.kthangman.game.state.ArenaState;
@@ -28,13 +29,15 @@ import java.util.stream.Collectors;
 public class GameArena extends Arena {
 
     private final KTHangman plugin;
-
     private final FileConfiguration messages;
+
     private ArenaManager arenaManager;
+    private DiscoverLetter discoverLetter;
 
     public GameArena(Arena arena, KTHangman plugin) {
         super(arena);
         this.plugin = plugin;
+        this.discoverLetter = new DiscoverLetter();
         this.arenaManager = plugin.getArenaManager();
         this.messages = plugin
                 .getLoaderManager()
@@ -179,6 +182,7 @@ public class GameArena extends Arena {
         }
     }
 
+
     /**
      * Check if the word is correct.
      *
@@ -191,16 +195,34 @@ public class GameArena extends Arena {
                 .map(GamePlayer::getUUID).filter(uuid -> Bukkit.getPlayer(uuid) != null)
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
 
-        // Check if the word is correct.
-        if (writeWord.equalsIgnoreCase(this.getWord())) {
-            this.gameWin();
+        for (Player player : arenaPlayers) {
 
+            // Check if the word is correct.
+            if (writeWord.equalsIgnoreCase(this.getWord())) {
+                this.gameWin();
 
-        } else if (getWord().contains(writeWord)){
+                // Check if the word contains a letter.
+            } else if (getWord().contains(writeWord)) {
+                if (writeWord.length() > 1) {
+                    this.decreaseLives();
+                    return;
+                }
+                char letter = writeWord.charAt(0);
 
+                // Check if the letter is already discovered.
+                if (discoverLetter.getCharDiscover().contains(letter)) {
+                    player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-letter-discovered")));
+                    return;
+                }
 
-        } else {
-            this.decreaseLives();
+                // Discover the letter.
+                discoverLetter.getCharDiscover().add(letter);
+                this.setFormatWord(discoverLetter.discover(getWord(), getFormatWord(), letter));
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 2);
+
+            } else {
+                this.decreaseLives();
+            }
         }
     }
 
@@ -227,7 +249,7 @@ public class GameArena extends Arena {
             // discover a letter if the player has only one life.
             if (lives == 1) {
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 2);
-                this.discoverLetter();
+                this.setFormatWord(discoverLetter.discoverRandomLetter(getWord(), getFormatWord()));
             }
 
             player.playSound(player.getLocation(), Sound.ENTITY_IRON_GOLEM_DAMAGE, 1, 1);
@@ -242,47 +264,6 @@ public class GameArena extends Arena {
             }
         }
         this.setCurrentLives(lives);
-    }
-
-    private final List<Integer> indexDiscover = new ArrayList<>();
-
-    /**
-     * Discover a letter from formatted word.
-     */
-    public void discoverLetter() {
-        String word = this.getWord().toUpperCase();
-        List<Integer> spaces = new ArrayList<>();
-
-        for (int i = 0; i < word.length(); i++) {
-            if (word.charAt(i) == ' ') {
-                spaces.add(i);
-            }
-        }
-
-        String splitWord = word.replace(" ", "");
-        String[] formattedWord = getFormatWord().split(" ");
-        int index = 0;
-
-        while (indexDiscover.contains(index)) {
-            index = new Random().nextInt(splitWord.length());
-        }
-
-        StringBuilder finalFormat = new StringBuilder();
-        String selectedChar = "&n" + splitWord.charAt(index) + "&a";
-
-        for (int i = 0; i < formattedWord.length; i++) {
-            if (i == index) {
-                finalFormat.append(selectedChar).append(" ");
-                continue;
-            }
-            finalFormat.append(formattedWord[i]).append(" ");
-        }
-
-        for (Integer space : spaces) {
-            finalFormat.insert(space * 2, " ");
-        }
-        this.indexDiscover.add(index);
-        this.setFormatWord(finalFormat.toString());
     }
 
     /**

@@ -117,7 +117,7 @@ public class Arena {
     }
 
     public String getWord() {
-        return word;
+        return word.toUpperCase();
     }
 
     public String getFormatWord() {

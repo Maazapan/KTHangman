@@ -23,6 +23,7 @@ arena-lives-left: '&cYou have &e%lives% &clives left!'
 arena-commands-disabled: '&cYou can not use commands while playing!'
 arena-game-over-leave: "&cThe game is over you will leave the arena in &e10 &cseconds!"
 arena-game-win-leave: "&c¡You will leave the arena in &e10 &cseconds!"
+arena-letter-discovered: '&cThe letter &e%letter% &chas already been discovered!'
 
 game-win:
   - ''
