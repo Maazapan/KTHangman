@@ -2,9 +2,7 @@ package io.github.maazapan.kthangman.game.discover;
 
 import io.github.maazapan.kthangman.utils.KatsuUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class DiscoverLetter {
 
@@ -41,9 +39,7 @@ public class DiscoverLetter {
         }
         for (Integer index : editedIndex) {
             finalFormat.deleteCharAt(index);
-            System.out.println(KatsuUtils.coloredHex("&a&n" + letter + "&a"));
-
-            finalFormat.insert(index, KatsuUtils.coloredHex("&a&n" + letter + "&a"));
+            finalFormat.insert(index, "" + letter);
         }
 
         for (Integer space : spaces) {
@@ -51,10 +47,7 @@ public class DiscoverLetter {
         }
         this.charDiscover.add(letter);
 
-        System.out.println(finalFormat.toString());
-        System.out.println(finalFormat.toString().replace("", " "));
-
-        return finalFormat.toString().replace("", " ");
+        return finalFormat.toString().replace("", " ").trim();
     }
 
     public String discoverRandomLetter(String word, String formatWord) {
@@ -75,7 +68,7 @@ public class DiscoverLetter {
         }
 
         StringBuilder finalFormat = new StringBuilder();
-        String selectedChar = "&n" + splitWord.charAt(index) + "&a";
+        String selectedChar = "" + splitWord.charAt(index);
 
         for (int i = 0; i < formattedWord.length; i++) {
             if (i == index) {
@@ -92,7 +85,7 @@ public class DiscoverLetter {
         this.charDiscover.add(splitWord.charAt(index));
         this.indexDiscover.add(index);
 
-        return finalFormat.toString();
+        return finalFormat.toString().trim();
     }
 
     public List<Character> getCharDiscover() {

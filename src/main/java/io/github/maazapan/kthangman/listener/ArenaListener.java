@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -94,5 +95,10 @@ public class ArenaListener implements Listener {
                 player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-commands-disabled")));
             }
         }
+    }
+
+    @EventHandler
+    public void test(EntityDamageByEntityEvent event) {
+
     }
 }

@@ -13,17 +13,19 @@ import io.github.maazapan.kthangman.game.state.ArenaState;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.Sound;
-import org.bukkit.WorldBorder;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class GameArena extends Arena {
@@ -31,8 +33,8 @@ public class GameArena extends Arena {
     private final KTHangman plugin;
     private final FileConfiguration messages;
 
-    private ArenaManager arenaManager;
-    private DiscoverLetter discoverLetter;
+    private final ArenaManager arenaManager;
+    private final DiscoverLetter discoverLetter;
 
     public GameArena(Arena arena, KTHangman plugin) {
         super(arena);
@@ -54,7 +56,8 @@ public class GameArena extends Arena {
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
 
         // Select a random word from the list.
-        String word = this.getWords().get(new Random().nextInt(getWords().size()));
+        // this.getWords().get(new Random().nextInt(getWords().size()))
+        String word = "MINECRAFT";
         String formatWord = KatsuUtils.formatWord(word);
 
         this.setUsed(true);
@@ -174,7 +177,13 @@ public class GameArena extends Arena {
                     .replaceAll("%time%", String.valueOf(time)));
 
             winMessages.forEach(s -> player.sendMessage(KatsuUtils.coloredHex(s)));
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 1);
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+
+            String[] titles = KatsuUtils.coloredHex(messages.getString("titles.game-win")).split(";");
+            player.sendTitle(KatsuUtils.coloredHex(titles[0].replaceAll("%word%", getWord()).replaceAll("%time%", String.valueOf(time))),
+                    KatsuUtils.coloredHex(titles[1].replaceAll("%word%", getWord()).replaceAll("%time%", String.valueOf(time))), 15, 60, 15);
+
+            spawnFireworks(player);
 
             // Terminate the game past 10 seconds.
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> arenaManager.leaveArena(this, player), 200);
@@ -197,11 +206,16 @@ public class GameArena extends Arena {
 
         for (Player player : arenaPlayers) {
 
-            // Check if the word is correct.
-            if (writeWord.equalsIgnoreCase(this.getWord())) {
+            /*
+             - Check if the word is correct.
+             */
+            if (writeWord.equalsIgnoreCase(getWord())) {
                 this.gameWin();
 
-                // Check if the word contains a letter.
+
+            /*
+             - Check if the word contains the letter.
+             */
             } else if (getWord().contains(writeWord)) {
                 if (writeWord.length() > 1) {
                     this.decreaseLives();
@@ -211,13 +225,18 @@ public class GameArena extends Arena {
 
                 // Check if the letter is already discovered.
                 if (discoverLetter.getCharDiscover().contains(letter)) {
-                    player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-letter-discovered")));
+                    player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-letter-discovered").replaceAll("%letter%", String.valueOf(letter))));
                     return;
                 }
 
-                // Discover the letter.
-                discoverLetter.getCharDiscover().add(letter);
-                this.setFormatWord(discoverLetter.discover(getWord(), getFormatWord(), letter));
+                String discoverWord = discoverLetter.discover(getWord(), getFormatWord(), letter);
+                this.setFormatWord(discoverWord);
+
+                // Check if the word is discovered.
+                if (discoverLetter.getCharDiscover().size() == getWord().length()) {
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::gameWin, 5L);
+                    return;
+                }
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 2);
 
             } else {
@@ -266,28 +285,6 @@ public class GameArena extends Arena {
         this.setCurrentLives(lives);
     }
 
-    /**
-     * Play sound game start.
-     *
-     * @param player Player to play the sound.
-     */
-    private void playSoundStart(Player player) {
-        new BukkitRunnable() {
-            private float i = 0.7f;
-            private int time = 0;
-
-            public void run() {
-                if (time <= 2) {
-                    player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 10, i);
-
-                } else {
-                    cancel();
-                }
-                i += 0.1f;
-                time++;
-            }
-        }.runTaskTimer(plugin, 0, 10);
-    }
 
     /**
      * Send blood effect to player.
@@ -334,5 +331,66 @@ public class GameArena extends Arena {
                 time++;
             }
         }.runTaskTimer(plugin, 0, 7);
+    }
+
+    /**
+     * Play sound game start.
+     *
+     * @param player Player to play the sound.
+     */
+    private void playSoundStart(Player player) {
+        new BukkitRunnable() {
+            private float i = 0.7f;
+            private int time = 0;
+
+            public void run() {
+                if (time <= 2) {
+                    player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 10, i);
+
+                } else {
+                    cancel();
+                }
+                i += 0.1f;
+                time++;
+            }
+        }.runTaskTimer(plugin, 0, 10);
+    }
+
+    public void spawnFireworks(Player player) {
+
+        new BukkitRunnable() {
+            private int timer = 0;
+
+            @Override
+            public void run() {
+                if (timer > 8) {
+                    cancel();
+                    return;
+                }
+                Random random = new Random();
+
+                for (int i = 0; i < 3; i++) {
+                    int x = random.nextInt(10) - 5;
+                    int z = random.nextInt(10) - 5;
+
+                    Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation().clone().add(x, 0, z), EntityType.FIREWORK);
+                    FireworkEffect fireworkEffect = FireworkEffect.builder()
+                            .with(FireworkEffect.Type.values()[random.nextInt(FireworkEffect.Type.values().length)])
+                            .withColor(Color.fromRGB(random.nextInt(255), random.nextInt(255), random.nextInt(255)))
+                            .withFade(Color.fromRGB(random.nextInt(255), random.nextInt(255), random.nextInt(255)))
+                            .flicker(true).trail(true)
+                            .build();
+
+                    FireworkMeta meta = firework.getFireworkMeta();
+
+                    meta.setPower(random.nextInt(3) + 1);
+                    meta.addEffect(fireworkEffect);
+
+                    firework.setFireworkMeta(meta);
+                }
+
+                timer++;
+            }
+        }.runTaskTimer(plugin, 0, 10);
     }
 }

@@ -72,3 +72,4 @@ titles:
   start-countdown: "&a%time%;&r"
   game-start: "&e¡Game has started!;&fThe Word is &a%formatted_word%"
   game-over: "&e¡Game is Over!;&fThe Word was &a%word%"
+  game-win: "&e¡You have won!;&fYou have guessed it in &a%time% &fseconds!"

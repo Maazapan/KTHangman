@@ -245,21 +245,6 @@ public class ArenaCommand implements CommandExecutor {
                         break;
 
                     case "test":
-                        WorldBorder worldBorder = player.getWorld().getWorldBorder();
-
-                        ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
-                        PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_SIZE);
-                        packet.getDoubles().write(0, 0.0);
-
-                        protocolManager.sendServerPacket(player, packet);
-
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
-                        {
-                            PacketContainer packet2 = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_SIZE);
-                            packet.getDoubles().write(0, worldBorder.getSize());
-
-                            protocolManager.sendServerPacket(player, packet2);
-                        }, 10);
                         break;
 
                     default:
