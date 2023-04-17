@@ -1,16 +1,18 @@
 package io.github.maazapan.kthangman.game.player;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketContainer;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.discover.DiscoverLetter;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
+import io.github.maazapan.kthangman.game.manager.hangman.HangAnimation;
+import io.github.maazapan.kthangman.game.manager.hangman.Hangman;
 import io.github.maazapan.kthangman.game.manager.scoreboard.FastManager;
 import io.github.maazapan.kthangman.game.state.ArenaState;
+import io.github.maazapan.kthangman.game.word.GameWord;
+import io.github.maazapan.kthangman.utils.ItemBuilder;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
+import io.github.maazapan.kthangman.utils.task.KatsuTask;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -19,13 +21,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class GameArena extends Arena {
@@ -36,11 +37,14 @@ public class GameArena extends Arena {
     private final ArenaManager arenaManager;
     private final DiscoverLetter discoverLetter;
 
+    private final GameWord gameWord;
+
     public GameArena(Arena arena, KTHangman plugin) {
         super(arena);
         this.plugin = plugin;
         this.discoverLetter = new DiscoverLetter();
         this.arenaManager = plugin.getArenaManager();
+        this.gameWord = getGameWord();
         this.messages = plugin
                 .getLoaderManager()
                 .getFileManager()
@@ -56,35 +60,24 @@ public class GameArena extends Arena {
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
 
         // Select a random word from the list.
-        // this.getWords().get(new Random().nextInt(getWords().size()))
-        String word = "MINECRAFT";
-        String formatWord = KatsuUtils.formatWord(word);
+        gameWord.selectRandomWord();
 
         this.setUsed(true);
-        this.setWord(word);
         this.setState(ArenaState.PLAYING);
-        this.setFormatWord(formatWord);
         this.setCurrentTime(System.currentTimeMillis() + (getTime() * 1000L));
 
-        System.out.println(getWord());
+        System.out.println("Word: " + gameWord.getWord());
 
         for (Player player : arenaPlayers) {
-            List<String> message = messages.getStringList("game-start");
-            message.forEach(s -> player.sendMessage(KatsuUtils.coloredHex(s.replaceAll("%formatted_word%", getFormatWord()))));
-
-            playSoundStart(player);
-            player.teleport(this.getSpawn());
-
-            // Send title to player.
-            String[] titles = KatsuUtils.coloredHex(messages.getString("titles.game-start")).split(";");
-            player.sendTitle(KatsuUtils.coloredHex(titles[0].replaceAll("%formatted_word%", getFormatWord())),
-                    KatsuUtils.coloredHex(titles[1].replaceAll("%formatted_word%", getFormatWord())), 15, 50, 15);
-
             // Set player scoreboard.
             FastManager fastManager = new FastManager(plugin);
             fastManager.createPlayingScoreboard(this, player);
+
+            this.messageStartArena(player);
+            this.addArenaItems(player);
         }
     }
+
 
     /**
      * Terminate the game.
@@ -92,22 +85,22 @@ public class GameArena extends Arena {
     public void terminateGame() {
         this.setState(ArenaState.WAITING);
         this.setUsed(false);
-        this.setWord(null);
-        this.setFormatWord(null);
         this.setTime(0);
-
         this.setCurrentLives(getLives());
+
+        // Remove all players from the game.
     }
 
     /**
      * Update the game every 10 ticks.
      */
     public void updateGame() {
+        FileConfiguration config = plugin.getConfig();
+
         for (GamePlayer gamePlayer : getGamePlayers()) {
             Player player = Bukkit.getPlayer(gamePlayer.getUUID());
 
             if (getState() == ArenaState.PLAYING) {
-
                 // Check time of the game, if the time is over, the game is over.
                 if (System.currentTimeMillis() > getCurrentTime()) {
                     this.gameOver();
@@ -115,13 +108,21 @@ public class GameArena extends Arena {
                 }
 
                 // Send actionbar with word at player.
-                String message = KatsuUtils.coloredHex(messages.getString("action-bar.game-word").replaceAll("%formatted_word%", getFormatWord()));
+                String message = KatsuUtils.coloredHex(messages.getString("action-bar.game-word")
+                        .replaceAll("%formatted_word%", KatsuUtils.formatDisplayWord(gameWord.getFormattedWord())));
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message));
 
                 // Update player scoreboard
                 if (plugin.getScoreboardMap().containsKey(player.getUniqueId())) {
                     FastManager fastManager = new FastManager(plugin);
                     fastManager.updatePlayingScoreboard(this, player);
+                }
+
+                // Display a random word
+                if (config.getBoolean("config.display-random-words")) {
+                    if (new Random().nextInt(100) <= 10) {
+                        //     hangman.displayRandomWord("holograms.random-words");
+                    }
                 }
             }
         }
@@ -143,12 +144,14 @@ public class GameArena extends Arena {
 
             // Send game over message at player.
             List<String> message = messages.getStringList("game-over");
-            message.replaceAll(s -> s.replaceAll("%word%", getWord()));
-            message.forEach(s -> player.sendMessage(KatsuUtils.coloredHex(s.replaceAll("%formatted_word%", getWord()))));
+            message.replaceAll(s -> s.replaceAll("%word%", KatsuUtils.formatDisplayWord(gameWord.getWord()))
+                    .replaceAll("%formatted_word%", KatsuUtils.formatDisplayWord(gameWord.getFormattedWord())));
+
+            message.forEach(s -> player.sendMessage(KatsuUtils.coloredHex(s)));
 
             String[] titles = KatsuUtils.coloredHex(messages.getString("titles.game-over")).split(";");
-            player.sendTitle(KatsuUtils.coloredHex(titles[0].replaceAll("%word%", getWord())),
-                    KatsuUtils.coloredHex(titles[1].replaceAll("%word%", getWord())), 15, 50, 15);
+            player.sendTitle(KatsuUtils.coloredHex(titles[0].replaceAll("%word%", KatsuUtils.formatDisplayWord(gameWord.getWord()))),
+                    KatsuUtils.coloredHex(titles[1].replaceAll("%word%", KatsuUtils.formatDisplayWord(gameWord.getFormattedWord()))), 15, 50, 15);
 
             // Terminate the game past 10 seconds.
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> arenaManager.leaveArena(this, player), 200);
@@ -160,11 +163,16 @@ public class GameArena extends Arena {
      *
      */
     public void gameWin() {
+        FileConfiguration config = plugin.getConfig();
+        HangAnimation animation = new HangAnimation(plugin);
+
         List<Player> arenaPlayers = getGamePlayers().stream()
                 .map(GamePlayer::getUUID).filter(uuid -> Bukkit.getPlayer(uuid) != null)
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
 
         this.setState(ArenaState.ENDING);
+
+        //  animation.winAnimation(hangman);
 
         for (Player player : arenaPlayers) {
 
@@ -172,7 +180,7 @@ public class GameArena extends Arena {
             long time = getTime() - ((getCurrentTime() - System.currentTimeMillis()) / 1000L);
 
             List<String> winMessages = messages.getStringList("game-win");
-            winMessages.replaceAll(s -> s.replaceAll("%word%", getWord())
+            winMessages.replaceAll(s -> s.replaceAll("%word%", KatsuUtils.formatDisplayWord(gameWord.getWord()))
                     .replaceAll("%lives%", String.valueOf(getCurrentLives()))
                     .replaceAll("%time%", String.valueOf(time)));
 
@@ -180,10 +188,8 @@ public class GameArena extends Arena {
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
 
             String[] titles = KatsuUtils.coloredHex(messages.getString("titles.game-win")).split(";");
-            player.sendTitle(KatsuUtils.coloredHex(titles[0].replaceAll("%word%", getWord()).replaceAll("%time%", String.valueOf(time))),
-                    KatsuUtils.coloredHex(titles[1].replaceAll("%word%", getWord()).replaceAll("%time%", String.valueOf(time))), 15, 60, 15);
-
-            spawnFireworks(player);
+            player.sendTitle(KatsuUtils.coloredHex(titles[0].replaceAll("%word%", KatsuUtils.formatDisplayWord(gameWord.getWord())).replaceAll("%time%", String.valueOf(time))),
+                    KatsuUtils.coloredHex(titles[1].replaceAll("%word%", KatsuUtils.formatDisplayWord(gameWord.getWord())).replaceAll("%time%", String.valueOf(time))), 15, 60, 15);
 
             // Terminate the game past 10 seconds.
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> arenaManager.leaveArena(this, player), 200);
@@ -198,25 +204,23 @@ public class GameArena extends Arena {
      * @param writeWord String at PlayerChatEvent
      */
     public void checkWord(String writeWord) {
-        FileConfiguration config = plugin.getConfig();
-
         List<Player> arenaPlayers = getGamePlayers().stream()
                 .map(GamePlayer::getUUID).filter(uuid -> Bukkit.getPlayer(uuid) != null)
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
 
         for (Player player : arenaPlayers) {
-
             /*
              - Check if the word is correct.
              */
-            if (writeWord.equalsIgnoreCase(getWord())) {
+            if (writeWord.equalsIgnoreCase(gameWord.getWord())) {
                 this.gameWin();
-
+                return;
+            }
 
             /*
              - Check if the word contains the letter.
              */
-            } else if (getWord().contains(writeWord)) {
+            if ((gameWord.getWord().contains(writeWord))) {
                 if (writeWord.length() > 1) {
                     this.decreaseLives();
                     return;
@@ -229,19 +233,22 @@ public class GameArena extends Arena {
                     return;
                 }
 
-                String discoverWord = discoverLetter.discover(getWord(), getFormatWord(), letter);
-                this.setFormatWord(discoverWord);
+                String discoverWord = discoverLetter.discover(gameWord.getWord(), gameWord.getFormattedWord(), letter);
+                gameWord.setFormattedWord(discoverWord);
 
                 // Check if the word is discovered.
-                if (discoverLetter.getCharDiscover().size() == getWord().length()) {
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::gameWin, 5L);
+                if (discoverLetter.getCharDiscover().size() == gameWord.getWord().length()) {
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this::gameWin, 2L);
                     return;
                 }
-                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 2);
 
-            } else {
-                this.decreaseLives();
+                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 2);
+                player.sendTitle(KatsuUtils.coloredHex("&a" + letter + "".toUpperCase()), "", 10, 40, 10);
+                return;
             }
+
+            // Decrease the lives of the player.
+            this.decreaseLives();
         }
     }
 
@@ -249,8 +256,6 @@ public class GameArena extends Arena {
      * Decrease the lives of the player.
      */
     private void decreaseLives() {
-        FileConfiguration config = plugin.getConfig();
-
         List<Player> arenaPlayers = getGamePlayers().stream()
                 .map(GamePlayer::getUUID).filter(uuid -> Bukkit.getPlayer(uuid) != null)
                 .map(Bukkit::getPlayer).collect(Collectors.toList());
@@ -268,7 +273,7 @@ public class GameArena extends Arena {
             // discover a letter if the player has only one life.
             if (lives == 1) {
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 10, 2);
-                this.setFormatWord(discoverLetter.discoverRandomLetter(getWord(), getFormatWord()));
+                gameWord.setFormattedWord(discoverLetter.discoverRandom(gameWord.getWord(), gameWord.getFormattedWord()));
             }
 
             player.playSound(player.getLocation(), Sound.ENTITY_IRON_GOLEM_DAMAGE, 1, 1);
@@ -276,37 +281,8 @@ public class GameArena extends Arena {
 
             double damage = (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / this.getLives());
             Bukkit.getScheduler().runTask(plugin, () -> player.damage(damage));
-
-            // Send blood effect to player.
-            if (config.getBoolean("config.blood-effect")) {
-                this.sendBloodEffect(player);
-            }
         }
         this.setCurrentLives(lives);
-    }
-
-
-    /**
-     * Send blood effect to player.
-     *
-     * @param player Player to send the effect.
-     */
-    private void sendBloodEffect(Player player) {
-        WorldBorder worldBorder = player.getWorld().getWorldBorder();
-
-        ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
-        PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_SIZE);
-        packet.getDoubles().write(0, 0.0);
-
-        protocolManager.sendServerPacket(player, packet);
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
-        {
-            PacketContainer packet2 = protocolManager.createPacket(PacketType.Play.Server.SET_BORDER_SIZE);
-            packet.getDoubles().write(0, worldBorder.getSize());
-
-            protocolManager.sendServerPacket(player, packet2);
-        }, 10);
     }
 
 
@@ -316,21 +292,15 @@ public class GameArena extends Arena {
      * @param player Player to play the sound.
      */
     private void playSoundGameOver(Player player) {
-        new BukkitRunnable() {
+        new KatsuTask(plugin, 7) {
             private float i = 0.7f;
-            private int time = 0;
 
+            @Override
             public void run() {
-                if (time <= 2) {
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 10, i);
-
-                } else {
-                    cancel();
-                }
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 10, i);
                 i -= 0.1f;
-                time++;
             }
-        }.runTaskTimer(plugin, 0, 7);
+        }.countDownTask(2);
     }
 
     /**
@@ -339,58 +309,45 @@ public class GameArena extends Arena {
      * @param player Player to play the sound.
      */
     private void playSoundStart(Player player) {
-        new BukkitRunnable() {
+        new KatsuTask(plugin, 10) {
             private float i = 0.7f;
-            private int time = 0;
-
-            public void run() {
-                if (time <= 2) {
-                    player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 10, i);
-
-                } else {
-                    cancel();
-                }
-                i += 0.1f;
-                time++;
-            }
-        }.runTaskTimer(plugin, 0, 10);
-    }
-
-    public void spawnFireworks(Player player) {
-
-        new BukkitRunnable() {
-            private int timer = 0;
 
             @Override
             public void run() {
-                if (timer > 8) {
-                    cancel();
-                    return;
-                }
-                Random random = new Random();
-
-                for (int i = 0; i < 3; i++) {
-                    int x = random.nextInt(10) - 5;
-                    int z = random.nextInt(10) - 5;
-
-                    Firework firework = (Firework) player.getWorld().spawnEntity(player.getLocation().clone().add(x, 0, z), EntityType.FIREWORK);
-                    FireworkEffect fireworkEffect = FireworkEffect.builder()
-                            .with(FireworkEffect.Type.values()[random.nextInt(FireworkEffect.Type.values().length)])
-                            .withColor(Color.fromRGB(random.nextInt(255), random.nextInt(255), random.nextInt(255)))
-                            .withFade(Color.fromRGB(random.nextInt(255), random.nextInt(255), random.nextInt(255)))
-                            .flicker(true).trail(true)
-                            .build();
-
-                    FireworkMeta meta = firework.getFireworkMeta();
-
-                    meta.setPower(random.nextInt(3) + 1);
-                    meta.addEffect(fireworkEffect);
-
-                    firework.setFireworkMeta(meta);
-                }
-
-                timer++;
+                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 10, i);
+                i += 0.1f;
             }
-        }.runTaskTimer(plugin, 0, 10);
+        }.countDownTask(2);
+    }
+
+    /**
+     * Create all items for the arena.
+     * and add that items at player inventory.
+     *
+     * @param player GamePlayer
+     */
+    private void addArenaItems(Player player) {
+        // Create the hint item-stack.
+        ItemStack hintItem = new ItemBuilder().fromConfig(messages, "arena-items.hint-item").build();
+        int slot = messages.getInt("arena-items.hint-item.slot");
+
+        NBTItem nbtHint = new NBTItem(hintItem);
+        nbtHint.setBoolean("kthangman-item-tips", false);
+        nbtHint.applyNBT(hintItem);
+
+        player.getInventory().setItem(slot, hintItem);
+    }
+
+    public void messageStartArena(Player player) {
+        List<String> message = messages.getStringList("game-start");
+        message.forEach(s -> player.sendMessage(KatsuUtils.coloredHex(s.replaceAll("%formatted_word%", gameWord.getFormattedWord()))));
+
+        playSoundStart(player);
+        player.teleport(getSpawn());
+
+        // Send title to player.
+        String[] titles = KatsuUtils.coloredHex(messages.getString("titles.game-start")).split(";");
+        player.sendTitle(KatsuUtils.coloredHex(titles[0].replaceAll("%formatted_word%", gameWord.getFormattedWord())),
+                KatsuUtils.coloredHex(titles[1].replaceAll("%formatted_word%", gameWord.getFormattedWord())), 15, 50, 15);
     }
 }

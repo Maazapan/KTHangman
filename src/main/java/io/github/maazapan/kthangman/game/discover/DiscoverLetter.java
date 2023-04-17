@@ -1,8 +1,11 @@
 package io.github.maazapan.kthangman.game.discover;
 
-import io.github.maazapan.kthangman.utils.KatsuUtils;
+import org.bukkit.ChatColor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 public class DiscoverLetter {
 
@@ -33,7 +36,9 @@ public class DiscoverLetter {
             }
 
             if (formattedWord.charAt(i) == letter) {
-                indexDiscover.add(i);
+                this.indexDiscover.add(i);
+                this.charDiscover.add(letter);
+
                 editedIndex.add(i);
             }
         }
@@ -45,54 +50,55 @@ public class DiscoverLetter {
         for (Integer space : spaces) {
             finalFormat.insert(space, " ");
         }
-        this.charDiscover.add(letter);
 
-        return finalFormat.toString().replace("", " ").trim();
+        return finalFormat.toString().replaceAll("", " ").trim();
     }
 
-    public String discoverRandomLetter(String word, String formatWord) {
+    /**
+     * Discover a random letter in the formatted word.
+     *
+     * @param word       Word to discover
+     * @param formatWord format of the word
+     * @return Formatted word with a random letter discovered
+     */
+    public String discoverRandom(String word, String formatWord) {
         List<Integer> spaces = new ArrayList<>();
 
-        for (int i = 0; i < word.length(); i++) {
-            if (word.charAt(i) == ' ') {
-                spaces.add(i);
-            }
-        }
+        String formatted = formatWord.replaceAll(" ", "");
+        String formattedWord = word.replace(" ", "");
 
-        String splitWord = word.replace(" ", "");
-        String[] formattedWord = formatWord.split(" ");
+        StringBuilder finalFormat = new StringBuilder(formatted);
+        char selectedChar = ' ';
         int index = 0;
 
         while (indexDiscover.contains(index)) {
-            index = new Random().nextInt(splitWord.length());
+            index = new Random().nextInt(formattedWord.length());
         }
 
-        StringBuilder finalFormat = new StringBuilder();
-        String selectedChar = "" + splitWord.charAt(index);
-
-        for (int i = 0; i < formattedWord.length; i++) {
-            if (i == index) {
-                finalFormat.append(selectedChar).append(" ");
-                continue;
+        for (int i = 0; i < formattedWord.length(); i++) {
+            if (word.charAt(i) == ' ') {
+                spaces.add(i);
             }
-            finalFormat.append(formattedWord[i]).append(" ");
+
+            if (index == i) {
+                this.indexDiscover.add(i);
+                this.charDiscover.add(selectedChar);
+
+                selectedChar = formattedWord.charAt(i);
+            }
         }
+
+        finalFormat.deleteCharAt(index);
+        finalFormat.insert(index, String.valueOf(selectedChar));
 
         for (Integer space : spaces) {
-            finalFormat.insert(space * 2, " ");
+            finalFormat.insert(space, " ");
         }
-
-        this.charDiscover.add(splitWord.charAt(index));
-        this.indexDiscover.add(index);
 
         return finalFormat.toString().trim();
     }
 
     public List<Character> getCharDiscover() {
         return charDiscover;
-    }
-
-    public List<Integer> getIndexDiscover() {
-        return indexDiscover;
     }
 }

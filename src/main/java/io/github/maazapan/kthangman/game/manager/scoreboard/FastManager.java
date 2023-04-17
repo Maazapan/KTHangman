@@ -28,11 +28,12 @@ public class FastManager {
         String time  = KatsuUtils.formatTime(gameArena.getCurrentTime() - System.currentTimeMillis());
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
 
-        lines.replaceAll(s -> s.replaceAll("%formatted_word%", KatsuUtils.coloredHex(gameArena.getFormatWord()))
+        lines.replaceAll(s -> s.replaceAll("%formatted_word%", KatsuUtils.formatDisplayWord(gameArena.getGameWord().getFormattedWord()))
                 .replaceAll("%arena_name%", gameArena.getName())
                 .replaceAll("%lives%", String.valueOf(gameArena.getCurrentLives()))
                 .replaceAll("%time%", time)
-                .replaceAll("%date%", dateFormat.format(System.currentTimeMillis())));
+                .replaceAll("%date%", dateFormat.format(System.currentTimeMillis()))
+                .replaceAll("%tips%", String.valueOf(gameArena.getGameWord().getTips())));
 
         fastBoard.updateTitle(lines.get(0));
         fastBoard.updateLines(lines.subList(1, lines.size()));
@@ -56,11 +57,12 @@ public class FastManager {
         String time  = KatsuUtils.formatTime(gameArena.getCurrentTime() - System.currentTimeMillis());
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
 
-        lines.replaceAll(s -> s.replaceAll("%formatted_word%", KatsuUtils.coloredHex(gameArena.getFormatWord()))
+        lines.replaceAll(s -> s.replaceAll("%formatted_word%", KatsuUtils.formatDisplayWord(gameArena.getGameWord().getFormattedWord()))
                 .replaceAll("%arena_name%", gameArena.getName())
                 .replaceAll("%lives%", String.valueOf(gameArena.getCurrentLives()))
                 .replaceAll("%time%", time)
-                .replaceAll("%date%", dateFormat.format(System.currentTimeMillis())));
+                .replaceAll("%date%", dateFormat.format(System.currentTimeMillis()))
+                .replaceAll("%tips%", String.valueOf(gameArena.getGameWord().getTips())));
 
         fastBoard.updateLines(lines.subList(1, lines.size()));
     }

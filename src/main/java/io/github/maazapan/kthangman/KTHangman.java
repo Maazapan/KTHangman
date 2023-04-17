@@ -3,6 +3,7 @@ package io.github.maazapan.kthangman;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
 import io.github.maazapan.kthangman.game.manager.scoreboard.FastBoard;
 import io.github.maazapan.kthangman.manager.LoaderManager;
+import io.github.maazapan.kthangman.utils.KatsuUtils;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
@@ -18,7 +19,7 @@ public final class KTHangman extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
+        // Plugin startup logic.
         this.arenaManager = new ArenaManager(this);
         this.loaderManager = new LoaderManager(this);
         this.scoreboardMap = new HashMap<>();

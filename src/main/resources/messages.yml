@@ -1,3 +1,16 @@
+
+
+######################################################################################
+  #    _  __  _____   _   _                                                        #
+  #   | |/ / |_   _| | | | |   __ _   _ __     __ _   _ __ ___     __ _   _ __     #
+  #   | ' /    | |   | |_| |  / _` | | '_ \   / _` | | '_ ` _ \   / _` | | '_ \    #
+  #   | . \    | |   |  _  | | (_| | | | | | | (_| | | | | | | | | (_| | | | | |   #
+  #   |_|\_\   |_|   |_| |_|  \__,_| |_| |_|  \__, | |_| |_| |_|  \__,_| |_| |_|   #
+  #                                           |___/                                #
+######################################################################################
+#-                              *\ Created by Maazapan © /*                         -#
+######################################################################################
+
 join-arena: "&eYou have joined the arena &7%arena_name%!"
 lobby-set: "&aThe lobby has been set in your location!"
 lobby-not-set: "&cThe lobby has not been set please use &7/hm setlobby!"
@@ -23,7 +36,11 @@ arena-lives-left: '&cYou have &e%lives% &clives left!'
 arena-commands-disabled: '&cYou can not use commands while playing!'
 arena-game-over-leave: "&cThe game is over you will leave the arena in &e10 &cseconds!"
 arena-game-win-leave: "&c¡You will leave the arena in &e10 &cseconds!"
+arena-game-leave-item: "&c¡You will leave the arena in &e5 &cseconds!"
 arena-letter-discovered: '&cThe letter &e%letter% &chas already been discovered!'
+arena-game-leave-cancel: '&aYou have cancelled the leave!'
+arena-game-no-tips: "&cYou have no tips left!"
+arena-game-tip: "&e&lTIP: &7%tip%."
 
 game-win:
   - ''
@@ -35,38 +52,66 @@ game-win:
   - '               &fLives Remain: &c%lives% ☠'
   - ''
 game-start:
-    - '&r'
-    - '                   &E&l¡GAME STARTED!'
-    - ''
-    - '          &7Guess the word as fast as possible '
-    - '        &7you only have a few tries try not to die!'
-    - ''
-    - '          &fThe Word is: &r&a%formatted_word%'
-    - ''
+  - '&r'
+  - '                   &E&l¡GAME STARTED!'
+  - ''
+  - '          &7Guess the word as fast as possible '
+  - '        &7you only have a few tries try not to die!'
+  - ''
+  - '          &fThe Word is: &r&a%formatted_word%'
+  - ''
 game-over:
-    - '&r'
-    - '                    &e&l¡GAME OVER!'
-    - ''
-    - "          &7The game is over you've lost this time"
-    - '          &7go and try as many times as you want! '
-    - ''
-    - '                &fThe Word was: &a%word%'
-    - ''
+  - '&r'
+  - '                    &e&l¡GAME OVER!'
+  - ''
+  - "          &7The game is over you've lost this time"
+  - '          &7go and try as many times as you want! '
+  - ''
+  - '                &fThe Word was: &a%word%'
+  - ''
 
 action-bar:
   game-word: "&fThe Word is: &a%formatted_word%"
 
 scoreboard:
   playing-scoreboard:
-    - '       &e&lKTHangman       '
+    - '       &6&lKTHangman       '
     - '         &8%date%'
     - '&r'
     - '&fTime Remain: &b%time%'
     - ''
-    - '&fLives: &c%lives% ☠'
-    - '&fWord: &a%formatted_word%'
+    - '&fLives: &a%lives%'
+    - '&fTips: &a%tips%'
+    - ''
+    - '&fWord to Discover:'
+    - ' &a%formatted_word%'
     - '&f'
     - '&ewww.example.com'
+
+holograms:
+  win-words:
+    - '&eTHANKS YOU!!'
+    - '&eYOU ARE THE BEST!!'
+    - '&eYOU ARE MY HERO!!'
+  random-words:
+    - '&eHEEELP!'
+    - '&eHELP ME!'
+
+arena-items:
+  hint-item:
+    id: PLAYER_HEAD
+    slot: 7
+    skull: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmFkYzA0OGE3Y2U3OGY3ZGFkNzJhMDdkYTI3ZDg1YzA5MTY4ODFlNTUyMmVlZWQxZTNkYWYyMTdhMzhjMWEifX19
+    display_name: "&eTips &7(Right Click)"
+    lore:
+      - '&7Click to get a tip'
+
+  leave-item:
+    id: RED_BED
+    slot: 8
+    display_name: '&cLeave Arena &7(Right Click)'
+    lore:
+      - '&7Click to Leave the arena'
 
 titles:
   start-countdown: "&a%time%;&r"

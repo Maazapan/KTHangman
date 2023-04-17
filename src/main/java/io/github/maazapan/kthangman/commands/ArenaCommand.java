@@ -4,25 +4,27 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketContainer;
+
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.comphenix.protocol.wrappers.WrappedWatchableObject;
+
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
 import io.github.maazapan.kthangman.game.player.GameArena;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
-import org.bukkit.*;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ArenaCommand implements CommandExecutor {
@@ -245,6 +247,28 @@ public class ArenaCommand implements CommandExecutor {
                         break;
 
                     case "test":
+                        ProtocolManager manager = ProtocolLibrary.getProtocolManager();
+                        PacketContainer packet = manager.createPacket(PacketType.Play.Server.NAMED_ENTITY_SPAWN);
+
+                        /*
+                        PacketContainer infoPacket = manager.createPacket(PacketType.Play.Server.PLAYER_INFO);
+
+
+                        PacketContainer packet = manager.createPacket(PacketType.Play.Server.SPAWN_ENTITY);
+
+                        packet.getIntegers().write(0, 1);
+                        packet.getEntityTypeModifier().write(0, EntityType.PLAYER);
+
+                        packet.getUUIDs().write(0, player.getUniqueId());
+
+                        packet.getDoubles()
+                                .write(0, player.getLocation().getX())
+                                .write(1, player.getLocation().getY())
+                                .write(2, player.getLocation().getZ());
+
+                        manager.sendServerPacket(player, packet);
+
+                         */
                         break;
 
                     default:

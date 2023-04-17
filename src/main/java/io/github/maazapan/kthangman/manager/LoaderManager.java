@@ -2,7 +2,6 @@ package io.github.maazapan.kthangman.manager;
 
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.commands.ArenaCommand;
-import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.manager.ArenaLoader;
 import io.github.maazapan.kthangman.game.manager.ArenaManager;
 import io.github.maazapan.kthangman.game.player.GameArena;
@@ -14,7 +13,6 @@ import io.github.maazapan.kthangman.manager.task.TaskManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

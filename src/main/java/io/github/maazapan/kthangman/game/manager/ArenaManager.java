@@ -1,5 +1,6 @@
 package io.github.maazapan.kthangman.game.manager;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import io.github.maazapan.kthangman.KTHangman;
 import io.github.maazapan.kthangman.game.Arena;
 import io.github.maazapan.kthangman.game.countdown.StartCountdown;
@@ -7,15 +8,14 @@ import io.github.maazapan.kthangman.game.manager.scoreboard.FastBoard;
 import io.github.maazapan.kthangman.game.player.GameArena;
 import io.github.maazapan.kthangman.game.player.GamePlayer;
 import io.github.maazapan.kthangman.game.state.ArenaState;
+import io.github.maazapan.kthangman.utils.ItemBuilder;
 import io.github.maazapan.kthangman.utils.KatsuUtils;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -62,8 +62,11 @@ public class ArenaManager {
         playingArenas.add(gameArena);
         player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 
+
+        this.addArenaItems(player);
+
         // Start arena countdown.
-        new StartCountdown(plugin, gameArena).runTaskTimer(plugin, 0, 20);
+        new StartCountdown(plugin, gameArena).countDownTask(5);
     }
 
 
@@ -88,11 +91,6 @@ public class ArenaManager {
             player.setGameMode(gamePlayer.getGameMode());
         }
 
-        // Teleport player at lobby
-        if (getLobby() != null) {
-            player.teleport(getLobby());
-        }
-
         // If the player is has scoreboard, remove it.
         if (plugin.getScoreboardMap().containsKey(player.getUniqueId())) {
             FastBoard fastBoard = plugin.getScoreboardMap().get(player.getUniqueId());
@@ -104,8 +102,15 @@ public class ArenaManager {
 
         // If the arena is empty, terminate the game.
         if (arena.getGamePlayers().isEmpty()) {
+            System.out.println("Arena is empty, terminating game.");
+
             playingArenas.remove(arena);
             arena.terminateGame();
+        }
+
+        // Teleport player at lobby
+        if (getLobby() != null) {
+            player.teleport(getLobby());
         }
 
         player.sendMessage(KatsuUtils.coloredHex(plugin.getPrefix() + messages.getString("arena-leave").replaceAll("%arena_name%", arena.getName())));
@@ -150,6 +155,26 @@ public class ArenaManager {
         config.set("lobby.pitch", location.getPitch());
 
         plugin.getLoaderManager().getFileManager().getLobby().save();
+    }
+
+
+    /**
+     * Add arena items to player.
+     *
+     * @param player Player to add items
+     */
+    private void addArenaItems(Player player) {
+        FileConfiguration messages = plugin.getLoaderManager().getFileManager().getMessages();
+
+        // Create a leave item for the player.
+        int slot = messages.getInt("arena-items.leave-item.slot");
+        ItemStack leaveItem = new ItemBuilder().fromConfig(messages, "arena-items.leave-item").build();
+
+        NBTItem nbtLeave = new NBTItem(leaveItem);
+        nbtLeave.setBoolean("kthangman-item-leave", false);
+        nbtLeave.applyNBT(leaveItem);
+
+        player.getInventory().setItem(slot, leaveItem);
     }
 
     /**

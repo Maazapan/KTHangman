@@ -2,6 +2,7 @@ package io.github.maazapan.kthangman.game;
 
 import io.github.maazapan.kthangman.game.player.GamePlayer;
 import io.github.maazapan.kthangman.game.state.ArenaState;
+import io.github.maazapan.kthangman.game.word.GameWord;
 import org.bukkit.Location;
 
 import java.util.ArrayList;
@@ -26,13 +27,11 @@ public class Arena {
     private int currentLives;
 
     private final List<GamePlayer> gamePlayers;
-    private List<String> words;
-
-    private String word;
-    private String formatWord;
+    private final GameWord gameWord;
 
     public Arena(String name) {
         this.gamePlayers = new ArrayList<>();
+        this.gameWord = new GameWord();
         this.state = ArenaState.WAITING;
         this.lives = 5;
         this.currentLives = lives;
@@ -40,13 +39,10 @@ public class Arena {
         this.time = 120;
         this.enabled = false;
         this.used = false;
-        this.words = Arrays.asList(
-                "HOUSE", "CAT", "MINECRAFT", "DOG",
-                "BANANA", "APPLE", "ORANGE",
-                "TECHNOLOGY", "COMPUTER", "MUSIC");
     }
 
     public Arena(Arena arena) {
+        this.gameWord = arena.getGameWord();
         this.time = arena.getTime();
         this.spawn = arena.getSpawn();
         this.hang = arena.getHang();
@@ -57,7 +53,6 @@ public class Arena {
         this.name = arena.getName();
         this.enabled = arena.isEnabled();
         this.used = arena.isUsed();
-        this.words = arena.getWords();
     }
 
     public boolean isEnabled() {
@@ -112,28 +107,8 @@ public class Arena {
         return gamePlayers;
     }
 
-    public List<String> getWords() {
-        return words;
-    }
-
-    public String getWord() {
-        return word.toUpperCase();
-    }
-
-    public String getFormatWord() {
-        return formatWord;
-    }
-
     public void setLives(int lives) {
         this.lives = lives;
-    }
-
-    public void setFormatWord(String formatWord) {
-        this.formatWord = formatWord;
-    }
-
-    public void setWord(String word) {
-        this.word = word;
     }
 
     public ArenaState getState() {
@@ -160,7 +135,7 @@ public class Arena {
         this.currentTime = currentTime;
     }
 
-    public void setWords(List<String> words) {
-        this.words = words;
+    public GameWord getGameWord() {
+        return gameWord;
     }
 }

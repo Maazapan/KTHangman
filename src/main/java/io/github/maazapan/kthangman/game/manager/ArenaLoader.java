@@ -60,9 +60,14 @@ public class ArenaLoader {
                     config.set("spawn-location", spawnLocation);
                 }
 
+                // Save game words and tips.
+                for (String word : arena.getGameWord().getWords().keySet()) {
+                    config.set("list-of-words." + word, arena.getGameWord().getWords().get(word));
+                }
+
                 config.set("enabled", arena.isEnabled());
                 config.set("time", arena.getTime());
-                config.set("words", arena.getWords());
+                config.set("word-tips", arena.getGameWord().getTips());
 
                 config.save(file);
             }
@@ -87,12 +92,11 @@ public class ArenaLoader {
             if (listFiles == null) return;
             for (File file : listFiles) {
                 FileConfiguration config = YamlConfiguration.loadConfiguration(file);
-
                 String name = file.getName().replace(".yml", "");
-                List<String> words = config.getStringList("words");
 
                 boolean enabled = config.getBoolean("enabled");
                 int time = config.getInt("time");
+                int tips = config.getInt("word-tips");
 
                 // Create a new arena.
                 Arena arena = new Arena(name);
@@ -117,9 +121,17 @@ public class ArenaLoader {
 
                     arena.setSpawn(spawnLocation);
                 }
+
+                // Get list of words and tips.
+                if (config.contains("list-of-words")) {
+                    for (String word : config.getConfigurationSection("list-of-words").getKeys(false)) {
+                        arena.getGameWord().getWords().put(word, config.getStringList("list-of-words." + word));
+                    }
+                }
+
                 arena.setEnabled(enabled);
                 arena.setTime(time);
-                arena.setWords(words);
+                arena.getGameWord().setTips(tips);
 
                 arenaManager.getCreatedArenas().add(arena);
             }

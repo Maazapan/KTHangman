@@ -1,7 +1,8 @@
 config:
   prefix: " &8&l» &f"
 
-  blood-effect: true
+  spawn-fireworks: true
+  display-random-words: true
 
   allowed-commands:
     - '/hm leave'

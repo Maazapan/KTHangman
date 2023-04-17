@@ -1,6 +1,7 @@
 package io.github.maazapan.kthangman.utils;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -8,11 +9,7 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Base64;
-import java.util.Date;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,7 +45,7 @@ public class KatsuUtils {
         return null;
     }
 
-    public static String formatTime(long time){
+    public static String formatTime(long time) {
         return TimeUnit.MILLISECONDS.toMinutes(time) + ":" + TimeUnit.MILLISECONDS.toSeconds(time) % 60;
     }
 
@@ -63,6 +60,24 @@ public class KatsuUtils {
             formatted.append("_ ");
         }
         return formatted.toString();
+    }
+
+    public static String formatDisplayWord(String word) {
+        word = word.replace(" ", "");
+        StringBuilder finalWord = new StringBuilder();
+
+        for (int i = 0; i < word.length(); i++) {
+            if (word.charAt(i) != '_' && word.charAt(i) != ' ') {
+                finalWord.append(" &a&n").append(word.charAt(i)).append("&r&a ");
+                continue;
+            }
+            finalWord.append(" _ ");
+        }
+        return coloredHex(finalWord.toString().trim());
+    }
+
+    public static Location center(Location location) {
+        return location.add(0.5, 0, 0.5);
     }
 
     public static String coloredHex(String message) {
